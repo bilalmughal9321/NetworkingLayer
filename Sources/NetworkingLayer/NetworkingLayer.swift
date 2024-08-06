@@ -11,6 +11,10 @@ public class NetworkManager {
 
     private init() {}
 
+    //MARK: - ALAMOFIRE -
+    
+    //MARK: - OBJECT MAPPER SECTION
+    
     public func request<T: Mappable>(_ url: URLConvertible, method: HTTPMethod = .get, parameters: Parameters? = nil, encoding: ParameterEncoding = URLEncoding.default, headers: HTTPHeaders? = nil, completion: @escaping (Result<T, Error>) -> Void) {
         AF.request(url, method: method, parameters: parameters, encoding: encoding, headers: headers).responseJSON { response in
             switch response.result {
@@ -43,6 +47,9 @@ public class NetworkManager {
         }
     }
     
+    
+    //MARK: - DECODABLE
+    
     public func requestDecodable<T: Decodable>(_ url: URLConvertible, method: HTTPMethod = .get, parameters: Parameters? = nil, encoding: ParameterEncoding = URLEncoding.default, headers: HTTPHeaders? = nil, completion: @escaping (Result<T, Error>) -> Void) {
            AF.request(url, method: method, parameters: parameters, encoding: encoding, headers: headers)
                .validate()
@@ -67,6 +74,56 @@ public class NetworkManager {
                        completion(.failure(error))
                    }
                }
+       }
+    
+    //MARK: -URL SESSION-
+    
+    func requestUrlSession<T: Decodable>(_ url: URL, completion: @escaping (Result<T, Error>) -> Void) {
+           let task = URLSession.shared.dataTask(with: url) { data, response, error in
+               if let error = error {
+                   completion(.failure(error))
+                   return
+               }
+
+               guard let data = data else {
+                   completion(.failure(NSError(domain: "com.yourdomain.network", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Data"])))
+                   return
+               }
+
+               do {
+                   let decodedObject = try JSONDecoder().decode(T.self, from: data)
+                   DispatchQueue.main.async {
+                       completion(.success(decodedObject))
+                   }
+               } catch {
+                   completion(.failure(error))
+               }
+           }
+           task.resume()
+       }
+    
+    func requestArrayUrlSession<T: Decodable>(_ url: URL, completion: @escaping (Result<[T], Error>) -> Void) {
+           let task = URLSession.shared.dataTask(with: url) { data, response, error in
+               if let error = error {
+                   completion(.failure(error))
+                   return
+               }
+
+               guard let data = data else {
+                   completion(.failure(NSError(domain: "com.yourdomain.network", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Data"])))
+                   return
+               }
+
+               do {
+                   let decodedArray = try JSONDecoder().decode([T].self, from: data)
+                   DispatchQueue.main.async {
+                       completion(.success(decodedArray))
+                   }
+               } catch {
+                   completion(.failure(error))
+               }
+           }
+           task.resume()
        }
 }
 
