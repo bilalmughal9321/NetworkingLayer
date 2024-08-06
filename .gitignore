@@ -1,0 +1,7 @@
+*.xcworkspace
+*.xcscheme
+*.xcuserstate
+*.xcuserdata
+
+# Swift Package Manager
+.swiftpm/xcode/xcuserdata
