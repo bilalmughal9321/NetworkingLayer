@@ -42,5 +42,31 @@ public class NetworkManager {
             }
         }
     }
+    
+    public func requestDecodable<T: Decodable>(_ url: URLConvertible, method: HTTPMethod = .get, parameters: Parameters? = nil, encoding: ParameterEncoding = URLEncoding.default, headers: HTTPHeaders? = nil, completion: @escaping (Result<T, Error>) -> Void) {
+           AF.request(url, method: method, parameters: parameters, encoding: encoding, headers: headers)
+               .validate()
+               .responseDecodable(of: T.self) { response in
+                   switch response.result {
+                   case .success(let value):
+                       completion(.success(value))
+                   case .failure(let error):
+                       completion(.failure(error))
+                   }
+               }
+       }
+
+       public func requestArrayDecodable<T: Decodable>(_ url: URLConvertible, method: HTTPMethod = .get, parameters: Parameters? = nil, encoding: ParameterEncoding = URLEncoding.default, headers: HTTPHeaders? = nil, completion: @escaping (Result<[T], Error>) -> Void) {
+           AF.request(url, method: method, parameters: parameters, encoding: encoding, headers: headers)
+               .validate()
+               .responseDecodable(of: [T].self) { response in
+                   switch response.result {
+                   case .success(let value):
+                       completion(.success(value))
+                   case .failure(let error):
+                       completion(.failure(error))
+                   }
+               }
+       }
 }
 
