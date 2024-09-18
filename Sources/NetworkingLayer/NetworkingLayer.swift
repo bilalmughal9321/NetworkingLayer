@@ -76,6 +76,17 @@ public class NetworkManager {
                }
        }
     
+    public func RequestJson(_ url: URLConvertible, method: HTTPMethod = .get, parameters: Parameters? = nil, encoding: ParameterEncoding = URLEncoding.default, headers: HTTPHeaders? = nil, completion: @escaping (Result<Any, Error>) -> Void) {
+        AF.request(url, method: method, parameters: parameters, encoding: encoding, headers: headers).responseJSON { response in
+            switch response.result {
+            case .success(let value):
+                completion(.success(value))  // Return the raw value (could be JSON or other types)
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
     //MARK: -URL SESSION-
     
     func requestUrlSession<T: Decodable>(_ url: URL, completion: @escaping (Result<T, Error>) -> Void) {
